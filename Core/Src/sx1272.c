@@ -279,38 +279,35 @@ void SX1272_SendPacket(uint8_t *buffer, uint8_t size)
     // Set TX mode
     SX1272_SetOpMode(MODE_LONG_RANGE_MODE | MODE_TX);
 
-    // Wait for TX done (interrupt will be triggered)
+    // Wait for TX done
 }
 
-uint8_t SX1272_ReceivePacket(uint8_t *buffer, uint8_t size)
-{
-    // Check if packet received
+uint8_t SX1272_ReceivePacket(uint8_t *buffer, uint8_t size) {
     uint8_t irqFlags = SX1272_Read(REG_IRQ_FLAGS);
 
-    if((irqFlags & IRQ_RX_DONE_MASK) == 0) {
-        return 0; // No packet received
-    }
-
-    // Clear IRQ flags
-    SX1272_Write(REG_IRQ_FLAGS, irqFlags);
-
-    // Check for payload CRC error
-    if(irqFlags & IRQ_PAYLOAD_CRC_ERROR_MASK) {
+    if(!(irqFlags & IRQ_RX_DONE_MASK)) {
         return 0;
     }
 
-    // Get received length
-    uint8_t length = SX1272_Read(REG_RX_NB_BYTES);
-    if(length > size) {
-        length = size;
+    // Clear IRQ flags (specific flags only)
+    SX1272_Write(REG_IRQ_FLAGS, IRQ_RX_DONE_MASK | IRQ_PAYLOAD_CRC_ERROR_MASK);
+
+    if(irqFlags & IRQ_PAYLOAD_CRC_ERROR_MASK) {
+        return 0; // CRC error
     }
 
-    // Get FIFO address
+    uint8_t length = SX1272_Read(REG_RX_NB_BYTES);
+    if(length == 0 || length > size) {
+        SX1272_StartReceiving(); // Return to RX
+        return 0;
+    }
+
     uint8_t currentAddr = SX1272_Read(REG_FIFO_RX_CURRENT_ADDR);
     SX1272_Write(REG_FIFO_ADDR_PTR, currentAddr);
-
-    // Read packet from FIFO
     SX1272_ReadBuffer(REG_FIFO, buffer, length);
+
+    // Restart RX
+    SX1272_StartReceiving();
 
     return length;
 }

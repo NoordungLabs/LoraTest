@@ -64,14 +64,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if(GPIO_Pin == SX1272_DIO0_PIN) {
         uint8_t irqFlags = SX1272_Read(REG_IRQ_FLAGS);
 
-        if(irqFlags & IRQ_TX_DONE_MASK) {
-            // Handle TxDone
-            SX1272_Write(REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
-            SX1272_StartReceiving();
-        }
+        // Clear ONLY the flags we're handling
+        SX1272_Write(REG_IRQ_FLAGS, irqFlags);
 
         if(irqFlags & IRQ_RX_DONE_MASK) {
-            // You could set a flag here to process in main loop
+
+        }
+        if(irqFlags & IRQ_TX_DONE_MASK) {
+            SX1272_StartReceiving(); // Critical for returning to RX
         }
     }
 }
@@ -125,7 +125,6 @@ int main(void)
 		  sprintf((char*)txBuffer, "Hello LoRa %d", counter++);
 		  SX1272_SendPacket(txBuffer, strlen((char*)txBuffer));
 		  lastSend = HAL_GetTick();
-	      // Send packet
 	  }
 
 	  // Check for received packets
@@ -133,9 +132,6 @@ int main(void)
 		  uint8_t len = SX1272_ReceivePacket(rxBuffer, sizeof(rxBuffer));
 		  if(len > 0) {
 			  rxBuffer[len] = 0; // Null terminate
-			  // Process received packet (rxBuffer contains the data)
-			  // For example, you could send it over UART:
-			  // HAL_UART_Transmit(&huart2, rxBuffer, len, HAL_MAX_DELAY);
 		  }
 	  }
 

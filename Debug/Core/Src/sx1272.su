@@ -18,5 +18,5 @@
 ../Core/Src/sx1272.c:260:8:SX1272_GetPacketSnr	8	static
 ../Core/Src/sx1272.c:265:6:SX1272_SendPacket	16	static
 ../Core/Src/sx1272.c:285:9:SX1272_ReceivePacket	24	static
-../Core/Src/sx1272.c:318:6:SX1272_StartReceiving	8	static
-../Core/Src/sx1272.c:327:9:SX1272_CheckReceived	8	static
+../Core/Src/sx1272.c:315:6:SX1272_StartReceiving	8	static
+../Core/Src/sx1272.c:324:9:SX1272_CheckReceived	8	static
