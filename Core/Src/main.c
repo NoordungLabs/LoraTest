@@ -123,6 +123,7 @@ int main(void)
 	  static uint32_t lastSend = 0;
 	  if(HAL_GetTick() - lastSend >= 5000) {
 		  SX1272_Transmit(msg, strlen((char*)msg));
+		  lastSend = HAL_GetTick();
 	  }
 
 	  if (SX1272_ReadReg(REG_IRQ_FLAGS) & IRQ_RX_DONE_MASK)

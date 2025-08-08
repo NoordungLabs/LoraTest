@@ -68,6 +68,7 @@ void SX1272_SetupLora(void)
     SX1272_WriteReg(REG_MODEM_CONFIG1, 0x72);
     SX1272_WriteReg(REG_MODEM_CONFIG2, 0x74);
 
+
     // Map DIO0: RxDone=00, TxDone=01 depending on mode
     SX1272_WriteReg(REG_DIO_MAPPING1, 0x00);
 }
@@ -105,30 +106,36 @@ void SX1272_HandleDIO0(void)
 {
     uint8_t irqFlags = SX1272_ReadReg(REG_IRQ_FLAGS);
 
-    if (irqFlags & IRQ_TX_DONE_MASK)
-    {
-        SX1272_WriteReg(REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
-        // After TX, go back to RX
-        SX1272_Receive();
-    }
+    // Always clear ALL interrupts first
+    SX1272_WriteReg(REG_IRQ_FLAGS, 0xFF);  // Clear all flags
+
     if (irqFlags & IRQ_RX_DONE_MASK)
     {
-        if (irqFlags & IRQ_CRC_ERROR_MASK)
+        if (!(irqFlags & IRQ_CRC_ERROR_MASK))
         {
-            SX1272_WriteReg(REG_IRQ_FLAGS, IRQ_CRC_ERROR_MASK);
-        }
-        else
-        {
-            uint8_t currentAddr = SX1272_ReadReg(REG_FIFO_RX_CURRENT);
+            // 1. Get payload length FIRST
             SX1272_RxLength = SX1272_ReadReg(REG_RX_NB_BYTES);
 
+            // 2. Get current FIFO address
+            uint8_t currentAddr = SX1272_ReadReg(REG_FIFO_RX_CURRENT);
+
+            // 3. Set FIFO pointer
             SX1272_WriteReg(REG_FIFO_ADDR_PTR, currentAddr);
-            SX1272_ReadBuffer(REG_FIFO, SX1272_RxBuffer, SX1272_RxLength);
 
-            if (SX1272_RxLength < sizeof(SX1272_RxBuffer))
+            // 4. Read FIFO
+            if(SX1272_RxLength > 0 && SX1272_RxLength <= 256) {
+                SX1272_ReadBuffer(REG_FIFO, SX1272_RxBuffer, SX1272_RxLength);
+            }
+
+            // Optional: Null terminate if needed
+            if (SX1272_RxLength < 255) {
                 SX1272_RxBuffer[SX1272_RxLength] = '\0';
-
-            SX1272_WriteReg(REG_IRQ_FLAGS, IRQ_RX_DONE_MASK);
+            }
         }
+    }
+    else if (irqFlags & IRQ_TX_DONE_MASK)
+    {
+        // Immediately return to RX mode after TX
+        SX1272_Receive();
     }
 }
