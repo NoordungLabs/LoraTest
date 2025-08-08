@@ -60,19 +60,11 @@ uint8_t rxBuffer[256];
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if(GPIO_Pin == SX1272_DIO0_PIN) {
-        uint8_t irqFlags = SX1272_Read(REG_IRQ_FLAGS);
-
-        // Clear ONLY the flags we're handling
-        SX1272_Write(REG_IRQ_FLAGS, irqFlags);
-
-        if(irqFlags & IRQ_RX_DONE_MASK) {
-
-        }
-        if(irqFlags & IRQ_TX_DONE_MASK) {
-            SX1272_StartReceiving(); // Critical for returning to RX
-        }
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == SX1272_DIO0_PIN)
+    {
+        SX1272_HandleDIO0();
     }
 }
 /* USER CODE END 0 */
@@ -101,7 +93,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  SX1272_Init();
+  int8_t msg[] = "Hello World";
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -109,11 +102,11 @@ int main(void)
   MX_CRC_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  SX1272_Init(&hspi1);
 
  // Start receiving
- SX1272_StartReceiving();
+ SX1272_Receive();
  uint8_t counter = 0;
+ SX1272_Transmit(msg, strlen((char*)msg));
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -122,18 +115,9 @@ int main(void)
   {
 	  static uint32_t lastSend = 0;
 	  if(HAL_GetTick() - lastSend >= 5000) {
-		  sprintf((char*)txBuffer, "Hello LoRa %d", counter++);
-		  SX1272_SendPacket(txBuffer, strlen((char*)txBuffer));
-		  lastSend = HAL_GetTick();
+		  SX1272_Transmit(msg, strlen((char*)msg));
 	  }
 
-	  // Check for received packets
-	  if(SX1272_CheckReceived()) {
-		  uint8_t len = SX1272_ReceivePacket(rxBuffer, sizeof(rxBuffer));
-		  if(len > 0) {
-			  rxBuffer[len] = 0; // Null terminate
-		  }
-	  }
 
     /* USER CODE END WHILE */
 
