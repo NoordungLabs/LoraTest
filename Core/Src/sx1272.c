@@ -1,5 +1,4 @@
 #include "sx1272.h"
-#include "stm32g4xx_hal.h"
 #include <string.h>
 
 uint8_t SX1272_RxBuffer[256];
@@ -68,6 +67,9 @@ void SX1272_SetupLora(void)
     // Modem config (BW=125kHz, CR=4/5, SF=7)
     SX1272_WriteReg(REG_MODEM_CONFIG1, 0x72);
     SX1272_WriteReg(REG_MODEM_CONFIG2, 0x74);
+
+    // Map DIO0: RxDone=00, TxDone=01 depending on mode
+    SX1272_WriteReg(REG_DIO_MAPPING1, 0x00);
 }
 
 void SX1272_Init(void)
@@ -78,18 +80,24 @@ void SX1272_Init(void)
 
 void SX1272_Transmit(uint8_t *data, uint8_t size)
 {
+    // Map DIO0 to TxDone
+    SX1272_WriteReg(REG_DIO_MAPPING1, 0x40);
+
     SX1272_WriteReg(REG_OP_MODE, SX1272_MODE_STDBY | SX1272_MODE_LORA);
     SX1272_WriteReg(REG_FIFO_ADDR_PTR, 0x00);
     SX1272_WriteBuffer(REG_FIFO, data, size);
     SX1272_WriteReg(REG_PAYLOAD_LENGTH, size);
 
-    SX1272_WriteReg(REG_IRQ_FLAGS, 0xFF);
+    SX1272_WriteReg(REG_IRQ_FLAGS, 0xFF); // Clear all IRQs
     SX1272_WriteReg(REG_OP_MODE, SX1272_MODE_TX | SX1272_MODE_LORA);
 }
 
 void SX1272_Receive(void)
 {
-    SX1272_WriteReg(REG_IRQ_FLAGS, 0xFF);
+    // Map DIO0 to RxDone
+    SX1272_WriteReg(REG_DIO_MAPPING1, 0x00);
+
+    SX1272_WriteReg(REG_IRQ_FLAGS, 0xFF); // Clear all IRQs
     SX1272_WriteReg(REG_OP_MODE, SX1272_MODE_RX_CONT | SX1272_MODE_LORA);
 }
 
@@ -100,6 +108,8 @@ void SX1272_HandleDIO0(void)
     if (irqFlags & IRQ_TX_DONE_MASK)
     {
         SX1272_WriteReg(REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
+        // After TX, go back to RX
+        SX1272_Receive();
     }
     if (irqFlags & IRQ_RX_DONE_MASK)
     {

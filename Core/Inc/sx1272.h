@@ -11,6 +11,7 @@
 #include "stm32g4xx_hal.h"
 #include <stdint.h>
 
+// Pin connections
 #define SX1272_NSS_PORT      GPIOA
 #define SX1272_NSS_PIN       GPIO_PIN_4
 #define SX1272_RESET_PORT    GPIOA
@@ -19,7 +20,7 @@
 #define SX1272_DIO0_PORT     GPIOB
 #define SX1272_DIO0_PIN      GPIO_PIN_0
 
-// SX1272 register definitions
+// SX1272 registers
 #define REG_FIFO                 0x00
 #define REG_OP_MODE              0x01
 #define REG_FIFO_ADDR_PTR        0x0D
@@ -33,6 +34,7 @@
 #define REG_MODEM_CONFIG1        0x1D
 #define REG_MODEM_CONFIG2        0x1E
 #define REG_PAYLOAD_LENGTH       0x22
+#define REG_DIO_MAPPING1         0x40
 #define REG_IRQ_FLAGS_MASK       0x11
 
 // IRQ Masks
@@ -63,10 +65,5 @@ void SX1272_SetupLora(void);
 void SX1272_Transmit(uint8_t *data, uint8_t size);
 void SX1272_Receive(void);
 void SX1272_HandleDIO0(void);
-
-
-
-
-
 
 #endif /* INC_SX1272_H_ */

@@ -93,8 +93,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  SX1272_Init();
-  int8_t msg[] = "Hello World";
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -102,9 +101,12 @@ int main(void)
   MX_CRC_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  SX1272_Init();
+  SX1272_Receive();
+  int8_t msg[] = "Hello World";
 
  // Start receiving
- SX1272_Receive();
+ HAL_Delay(2000);
  uint8_t counter = 0;
  SX1272_Transmit(msg, strlen((char*)msg));
   /* USER CODE END 2 */
