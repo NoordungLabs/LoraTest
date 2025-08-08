@@ -56,6 +56,8 @@ static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 uint8_t txBuffer[256];
 uint8_t rxBuffer[256];
+uint8_t status;
+uint8_t irqFlags;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -64,6 +66,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == SX1272_DIO0_PIN)
     {
+        irqFlags = SX1272_ReadReg(REG_IRQ_FLAGS);
+        //printf("EXTI! IRQ=0x%02X\r\n", irqFlags);
         SX1272_HandleDIO0();
     }
 }
@@ -102,6 +106,7 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   SX1272_Init();
+  status = SX1272_ReadReg(0x42);
   SX1272_Receive();
   int8_t msg[] = "Hello World";
 
@@ -120,6 +125,11 @@ int main(void)
 		  SX1272_Transmit(msg, strlen((char*)msg));
 	  }
 
+	  if (SX1272_ReadReg(REG_IRQ_FLAGS) & IRQ_RX_DONE_MASK)
+	  {
+	      //printf("POLLED RX DONE\r\n");
+	      SX1272_HandleDIO0();
+	  }
 
     /* USER CODE END WHILE */
 
