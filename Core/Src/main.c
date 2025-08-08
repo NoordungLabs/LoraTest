@@ -45,7 +45,7 @@ CRC_HandleTypeDef hcrc;
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-
+extern uint8_t SX1272_RxBuffer[256];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
