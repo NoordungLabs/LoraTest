@@ -52,14 +52,13 @@ void SX1272_ReadBuffer(uint8_t addr, uint8_t *buffer, uint8_t size)
 }
 
 void SX1272_SetFrequency(uint32_t freq) {
-    // Calculate FRF register values (SX1272 uses F_XOSC = 32 MHz)
-    // Formula: FRF = (freq * 2^19) / 32,000,000
+
     uint64_t frf = ((uint64_t)freq << 19) / 32000000;
 
     // Write to frequency registers
-    SX1272_WriteReg(REG_FRF_MSB, (frf >> 16) & 0xFF);  // MSB
-    SX1272_WriteReg(REG_FRF_MID, (frf >> 8)  & 0xFF);  // Middle byte
-    SX1272_WriteReg(REG_FRF_LSB, frf & 0xFF);          // LSB
+    SX1272_WriteReg(REG_FRF_MSB, (frf >> 16) & 0xFF);
+    SX1272_WriteReg(REG_FRF_MID, (frf >> 8)  & 0xFF);
+    SX1272_WriteReg(REG_FRF_LSB, frf & 0xFF);
 }
 
 void SX1272_SetupLora(void)
@@ -71,7 +70,7 @@ void SX1272_SetupLora(void)
     // Standby
     SX1272_WriteReg(REG_OP_MODE, SX1272_MODE_STDBY | SX1272_MODE_LORA);
 
-    SX1272_SetFrequency(915000000);
+    SX1272_SetFrequency(868000000);
 
     // Base addresses
     SX1272_WriteReg(REG_FIFO_TX_BASE_ADDR, 0x00);

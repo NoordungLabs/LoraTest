@@ -1569,8 +1569,7 @@ void SX1272_SetFrequency(uint32_t freq) {
  8000b6e:	b084      	sub	sp, #16
  8000b70:	af00      	add	r7, sp, #0
  8000b72:	6078      	str	r0, [r7, #4]
-    // Calculate FRF register values (SX1272 uses F_XOSC = 32 MHz)
-    // Formula: FRF = (freq * 2^19) / 32,000,000
+
     uint64_t frf = ((uint64_t)freq << 19) / 32000000;
  8000b74:	6879      	ldr	r1, [r7, #4]
  8000b76:	2000      	movs	r0, #0
@@ -1588,7 +1587,7 @@ void SX1272_SetFrequency(uint32_t freq) {
  8000b92:	e9c7 2302 	strd	r2, r3, [r7, #8]
 
     // Write to frequency registers
-    SX1272_WriteReg(REG_FRF_MSB, (frf >> 16) & 0xFF);  // MSB
+    SX1272_WriteReg(REG_FRF_MSB, (frf >> 16) & 0xFF);
  8000b96:	e9d7 0102 	ldrd	r0, r1, [r7, #8]
  8000b9a:	f04f 0200 	mov.w	r2, #0
  8000b9e:	f04f 0300 	mov.w	r3, #0
@@ -1599,7 +1598,7 @@ void SX1272_SetFrequency(uint32_t freq) {
  8000bac:	4619      	mov	r1, r3
  8000bae:	2006      	movs	r0, #6
  8000bb0:	f7ff ff4e 	bl	8000a50 <SX1272_WriteReg>
-    SX1272_WriteReg(REG_FRF_MID, (frf >> 8)  & 0xFF);  // Middle byte
+    SX1272_WriteReg(REG_FRF_MID, (frf >> 8)  & 0xFF);
  8000bb4:	e9d7 0102 	ldrd	r0, r1, [r7, #8]
  8000bb8:	f04f 0200 	mov.w	r2, #0
  8000bbc:	f04f 0300 	mov.w	r3, #0
@@ -1610,7 +1609,7 @@ void SX1272_SetFrequency(uint32_t freq) {
  8000bca:	4619      	mov	r1, r3
  8000bcc:	2007      	movs	r0, #7
  8000bce:	f7ff ff3f 	bl	8000a50 <SX1272_WriteReg>
-    SX1272_WriteReg(REG_FRF_LSB, frf & 0xFF);          // LSB
+    SX1272_WriteReg(REG_FRF_LSB, frf & 0xFF);
  8000bd2:	7a3b      	ldrb	r3, [r7, #8]
  8000bd4:	4619      	mov	r1, r3
  8000bd6:	2008      	movs	r0, #8
@@ -1643,7 +1642,7 @@ void SX1272_SetupLora(void)
  8000bfc:	2001      	movs	r0, #1
  8000bfe:	f7ff ff27 	bl	8000a50 <SX1272_WriteReg>
 
-    SX1272_SetFrequency(915000000);
+    SX1272_SetFrequency(868000000);
  8000c02:	480c      	ldr	r0, [pc, #48]	@ (8000c34 <SX1272_SetupLora+0x4c>)
  8000c04:	f7ff ffb2 	bl	8000b6c <SX1272_SetFrequency>
 
@@ -1676,7 +1675,7 @@ void SX1272_SetupLora(void)
 }
  8000c30:	bf00      	nop
  8000c32:	bd80      	pop	{r7, pc}
- 8000c34:	3689cac0 	.word	0x3689cac0
+ 8000c34:	33bca100 	.word	0x33bca100
 
 08000c38 <SX1272_Init>:
 
