@@ -49,6 +49,11 @@
 #define SX1272_MODE_TX     0x03
 #define SX1272_MODE_RX_CONT 0x05
 
+// Frequency registers (add to existing register definitions)
+#define REG_FRF_MSB              0x06
+#define REG_FRF_MID              0x07
+#define REG_FRF_LSB              0x08
+
 extern SPI_HandleTypeDef hspi1;
 
 extern uint8_t SX1272_RxBuffer[256];
